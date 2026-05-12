@@ -13,7 +13,7 @@ import PyPDF2
 import io
 import json
 import tempfile
-import rezorpay
+import razorpay
 
 load_dotenv()
 
@@ -205,7 +205,8 @@ Respond in this exact JSON format only, nothing else:
     result = json.loads(clean, strict=False)
     return result
 
-    @app.post("/create-order")
+
+@app.post("/create-order")
 async def create_order():
     rz_client = razorpay.Client(auth=(os.getenv("RAZORPAY_KEY_ID"), os.getenv("RAZORPAY_KEY_SECRET")))
     order = rz_client.order.create({
