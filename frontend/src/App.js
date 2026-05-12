@@ -7,7 +7,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [resumes, setResumes] = useState([]);
-const [resumesLoading, setResumesLoading] = useState(false);
+  const [resumesLoading, setResumesLoading] = useState(false);
 
   const handleUpload = async () => {
     if (!file) return;
@@ -55,10 +55,52 @@ const [resumesLoading, setResumesLoading] = useState(false);
     formData.append("file", file);
     const response = await axios.post(
       "https://resume-scorer-backend.onrender.com/generate-resumes",
-      formData
+      formData,
     );
     setResumes(response.data.resumes);
     setResumesLoading(false);
+  };
+
+  const handlePayment = async (resumeIndex) => {
+    const orderRes = await axios.post(
+      "https://resume-scorer-backend.onrender.com/create-order",
+    );
+    const { order_id, amount, currency } = orderRes.data;
+
+    const options = {
+      key: "rzp_test_SoXhCegOCt8o6i",
+      amount: amount,
+      currency: currency,
+      name: "AI Resume Scorer",
+      description: "Unlock ATS-Friendly Resume",
+      order_id: order_id,
+      handler: async function (response) {
+        const verifyRes = await axios.post(
+          "https://resume-scorer-backend.onrender.com/verify-payment",
+          {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          },
+        );
+        if (verifyRes.data.success) {
+          const blob = new Blob([resumes[resumeIndex].content], {
+            type: "text/plain",
+          });
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", `resume_${resumeIndex + 1}.txt`);
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        }
+      },
+      theme: { color: "#4f46e5" },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
   };
 
   const scoreColor = (score) => {
@@ -186,64 +228,70 @@ const [resumesLoading, setResumesLoading] = useState(false);
               onClick={handleDownloadReport}
               className="mt-6 w-full py-3 rounded-xl text-white font-semibold text-base bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 cursor-pointer"
             >
-               Download PDF Report
+              Download PDF Report
             </button>
             <div className="mt-6">
-  <button
-    onClick={handleGenerateResumes}
-    disabled={resumesLoading}
-    className={`w-full py-3 rounded-xl text-white font-semibold text-base cursor-pointer ${
-      resumesLoading
-        ? "bg-gray-300 cursor-not-allowed"
-        : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700"
-    }`}
-  >
-    {resumesLoading ? "⏳ Generating Resumes..." : "✨ Generate ATS-Friendly Resumes"}
-  </button>
+              <button
+                onClick={handleGenerateResumes}
+                disabled={resumesLoading}
+                className={`w-full py-3 rounded-xl text-white font-semibold text-base cursor-pointer ${
+                  resumesLoading
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700"
+                }`}
+              >
+                {resumesLoading
+                  ? "⏳ Generating Resumes..."
+                  : "✨ Generate ATS-Friendly Resumes"}
+              </button>
 
-  {resumes.length > 0 && (
-    <div className="mt-6">
-      <h3 className="text-indigo-900 font-semibold text-base mb-4">
-        ✨ Your ATS-Friendly Resumes
-      </h3>
-      <div className="grid grid-cols-1 gap-4">
-        {resumes.map((resume, i) => (
-          <div key={i} className="relative border border-purple-200 rounded-xl overflow-hidden">
-            
-            {/* Resume Title */}
-            <div className="bg-purple-50 px-4 py-3 flex items-center justify-between">
-              <span className="text-purple-800 font-semibold text-sm">
-                {i + 1}. {resume.title}
-              </span>
-              <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-medium">
-                🔒 Locked
-              </span>
+              {resumes.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-indigo-900 font-semibold text-base mb-4">
+                    ✨ Your ATS-Friendly Resumes
+                  </h3>
+                  <div className="grid grid-cols-1 gap-4">
+                    {resumes.map((resume, i) => (
+                      <div
+                        key={i}
+                        className="relative border border-purple-200 rounded-xl overflow-hidden"
+                      >
+                        {/* Resume Title */}
+                        <div className="bg-purple-50 px-4 py-3 flex items-center justify-between">
+                          <span className="text-purple-800 font-semibold text-sm">
+                            {i + 1}. {resume.title}
+                          </span>
+                          <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-medium">
+                            🔒 Locked
+                          </span>
+                        </div>
+
+                        {/* Blurred Content */}
+                        <div className="relative">
+                          <div className="p-4 text-sm text-gray-700 whitespace-pre-wrap blur-sm select-none pointer-events-none h-48 overflow-hidden">
+                            {resume.content}
+                          </div>
+
+                          {/* Lock Overlay */}
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60">
+                            <div className="text-3xl mb-2">🔒</div>
+                            <p className="text-gray-700 font-semibold text-sm mb-3">
+                              Unlock karo ₹149 mein
+                            </p>
+                            <button
+                              onClick={() => handlePayment(i)}
+                              className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-2 rounded-xl text-sm font-semibold hover:from-indigo-600 hover:to-purple-700 cursor-pointer"
+                            >
+                              💳 Pay ₹149 & Download
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-
-            {/* Blurred Content */}
-            <div className="relative">
-              <div className="p-4 text-sm text-gray-700 whitespace-pre-wrap blur-sm select-none pointer-events-none h-48 overflow-hidden">
-                {resume.content}
-              </div>
-
-              {/* Lock Overlay */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60">
-                <div className="text-3xl mb-2">🔒</div>
-                <p className="text-gray-700 font-semibold text-sm mb-3">
-                  Unlock karo ₹149 mein
-                </p>
-                <button className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-2 rounded-xl text-sm font-semibold hover:from-indigo-600 hover:to-purple-700 cursor-pointer">
-                  💳 Pay ₹149 & Download
-                </button>
-              </div>
-            </div>
-
-          </div>
-        ))}
-      </div>
-    </div>
-  )}
-</div>
           </div>
         )}
       </div>

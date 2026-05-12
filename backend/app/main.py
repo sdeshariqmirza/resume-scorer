@@ -13,6 +13,7 @@ import PyPDF2
 import io
 import json
 import tempfile
+import rezorpay
 
 load_dotenv()
 
@@ -203,3 +204,27 @@ Respond in this exact JSON format only, nothing else:
     clean = response.choices[0].message.content.strip().replace("```json", "").replace("```", "").strip()
     result = json.loads(clean, strict=False)
     return result
+
+    @app.post("/create-order")
+async def create_order():
+    rz_client = razorpay.Client(auth=(os.getenv("RAZORPAY_KEY_ID"), os.getenv("RAZORPAY_KEY_SECRET")))
+    order = rz_client.order.create({
+        "amount": 14900,
+        "currency": "INR",
+        "payment_capture": 1
+    })
+    return {"order_id": order["id"], "amount": order["amount"], "currency": order["currency"]}
+
+
+@app.post("/verify-payment")
+async def verify_payment(data: dict):
+    rz_client = razorpay.Client(auth=(os.getenv("RAZORPAY_KEY_ID"), os.getenv("RAZORPAY_KEY_SECRET")))
+    try:
+        rz_client.utility.verify_payment_signature({
+            "razorpay_order_id": data["razorpay_order_id"],
+            "razorpay_payment_id": data["razorpay_payment_id"],
+            "razorpay_signature": data["razorpay_signature"]
+        })
+        return {"success": True}
+    except:
+        return {"success": False}
