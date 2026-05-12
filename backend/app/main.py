@@ -123,7 +123,7 @@ Respond in this exact JSON format only, nothing else:
             "content": "<full resume text here, properly formatted>"
         }},
         {{
-            "title": "Full Stack Developer Focus", 
+            "title": "Full Stack Developer Focus",
             "content": "<full resume text here, properly formatted>"
         }},
         {{
@@ -137,8 +137,7 @@ Respond in this exact JSON format only, nothing else:
     )
 
     clean = response.choices[0].message.content.strip().replace("```json", "").replace("```", "").strip()
-clean = clean.replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t')
-result = json.loads(clean)
+    result = json.loads(clean)
     return result
 
     clean = response.choices[0].message.content.strip().replace("```json", "").replace("```", "").strip()
