@@ -18,7 +18,7 @@ function App() {
 
     try {
       const response = await axios.post(
-        "https://resume-scorer-backend.onrender.com",
+        "https://resume-scorer-backend.onrender.com/score-resume",
         formData
       );
       setResult(response.data);
