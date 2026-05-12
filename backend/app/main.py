@@ -96,6 +96,50 @@ Respond in this exact JSON format:
         ]
     )
 
+@app.post("/generate-resumes")
+async def generate_resumes(file: UploadFile = File(...)):
+    pdf_content = await file.read()
+    pdf_reader = PyPDF2.PdfReader(io.BytesIO(pdf_content))
+
+    resume_text = ""
+    for page in pdf_reader.pages:
+        resume_text += page.extract_text()
+
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {
+                "role": "user",
+                "content": f"""You are an expert resume writer. Based on this resume, create 3 different ATS-optimized versions.
+
+Resume:
+{resume_text}
+
+Respond in this exact JSON format only, nothing else:
+{{
+    "resumes": [
+        {{
+            "title": "Software Engineer Focus",
+            "content": "<full resume text here, properly formatted>"
+        }},
+        {{
+            "title": "Full Stack Developer Focus", 
+            "content": "<full resume text here, properly formatted>"
+        }},
+        {{
+            "title": "Backend Developer Focus",
+            "content": "<full resume text here, properly formatted>"
+        }}
+    ]
+}}"""
+            }
+        ]
+    )
+
+    clean = response.choices[0].message.content.strip().replace("```json", "").replace("```", "").strip()
+    result = json.loads(clean)
+    return result
+
     clean = response.choices[0].message.content.strip().replace("```json", "").replace("```", "").strip()
     result = json.loads(clean)
 

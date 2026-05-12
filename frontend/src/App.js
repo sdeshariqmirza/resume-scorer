@@ -6,6 +6,8 @@ function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [resumes, setResumes] = useState([]);
+const [resumesLoading, setResumesLoading] = useState(false);
 
   const handleUpload = async () => {
     if (!file) return;
@@ -44,6 +46,19 @@ function App() {
     document.body.appendChild(link);
     link.click();
     link.remove();
+  };
+
+  const handleGenerateResumes = async () => {
+    if (!file) return;
+    setResumesLoading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await axios.post(
+      "https://resume-scorer-backend.onrender.com/generate-resumes",
+      formData
+    );
+    setResumes(response.data.resumes);
+    setResumesLoading(false);
   };
 
   const scoreColor = (score) => {
@@ -173,6 +188,62 @@ function App() {
             >
                Download PDF Report
             </button>
+            <div className="mt-6">
+  <button
+    onClick={handleGenerateResumes}
+    disabled={resumesLoading}
+    className={`w-full py-3 rounded-xl text-white font-semibold text-base cursor-pointer ${
+      resumesLoading
+        ? "bg-gray-300 cursor-not-allowed"
+        : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700"
+    }`}
+  >
+    {resumesLoading ? "⏳ Generating Resumes..." : "✨ Generate ATS-Friendly Resumes"}
+  </button>
+
+  {resumes.length > 0 && (
+    <div className="mt-6">
+      <h3 className="text-indigo-900 font-semibold text-base mb-4">
+        ✨ Your ATS-Friendly Resumes
+      </h3>
+      <div className="grid grid-cols-1 gap-4">
+        {resumes.map((resume, i) => (
+          <div key={i} className="relative border border-purple-200 rounded-xl overflow-hidden">
+            
+            {/* Resume Title */}
+            <div className="bg-purple-50 px-4 py-3 flex items-center justify-between">
+              <span className="text-purple-800 font-semibold text-sm">
+                {i + 1}. {resume.title}
+              </span>
+              <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-medium">
+                🔒 Locked
+              </span>
+            </div>
+
+            {/* Blurred Content */}
+            <div className="relative">
+              <div className="p-4 text-sm text-gray-700 whitespace-pre-wrap blur-sm select-none pointer-events-none h-48 overflow-hidden">
+                {resume.content}
+              </div>
+
+              {/* Lock Overlay */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60">
+                <div className="text-3xl mb-2">🔒</div>
+                <p className="text-gray-700 font-semibold text-sm mb-3">
+                  Unlock karo ₹149 mein
+                </p>
+                <button className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-2 rounded-xl text-sm font-semibold hover:from-indigo-600 hover:to-purple-700 cursor-pointer">
+                  💳 Pay ₹149 & Download
+                </button>
+              </div>
+            </div>
+
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
           </div>
         )}
       </div>
