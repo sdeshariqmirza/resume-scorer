@@ -137,7 +137,8 @@ Respond in this exact JSON format only, nothing else:
     )
 
     clean = response.choices[0].message.content.strip().replace("```json", "").replace("```", "").strip()
-    result = json.loads(clean)
+clean = clean.replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t')
+result = json.loads(clean)
     return result
 
     clean = response.choices[0].message.content.strip().replace("```json", "").replace("```", "").strip()
