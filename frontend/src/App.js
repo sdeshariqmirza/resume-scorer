@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import axios from "axios";
 
 function App() {
@@ -19,13 +19,31 @@ function App() {
     try {
       const response = await axios.post(
         "https://resume-scorer-backend.onrender.com/score-resume",
-        formData
+        formData,
       );
       setResult(response.data);
     } catch (err) {
-      setError("Kuch galat hua, dobara try karo");
+      setError("Kuch Galat Hua, Dobara Try Karo");
     }
     setLoading(false);
+  };
+
+  const handleDownloadReport = async () => {
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await axios.post(
+      "https://resume-scorer-backend.onrender.com/generate-report",
+      formData,
+      { responseType: "blob" },
+    );
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "resume_report.pdf");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   };
 
   const scoreColor = (score) => {
@@ -37,16 +55,22 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-700 flex items-center justify-center p-6">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl p-8">
-
         {/* Header */}
         <div className="text-center mb-8">
           <div className="text-5xl mb-2">📄</div>
-          <h1 className="text-3xl font-bold text-indigo-900 mb-1">AI Resume Scorer</h1>
-          <p className="text-gray-500 text-sm">Apna resume upload karo, ATS score aur suggestions pao</p>
+          <h1 className="text-3xl font-bold text-indigo-900 mb-1">
+            AI Resume Scorer
+          </h1>
+          <p className="text-gray-500 text-sm">
+            Apna resume upload karo, ATS score aur suggestions pao
+          </p>
         </div>
 
         {/* Upload Box */}
-        <label htmlFor="fileInput" className="cursor-pointer block border-2 border-dashed border-purple-300 rounded-xl p-8 text-center bg-purple-50 hover:bg-purple-100 transition mb-4">
+        <label
+          htmlFor="fileInput"
+          className="cursor-pointer block border-2 border-dashed border-purple-300 rounded-xl p-8 text-center bg-purple-50 hover:bg-purple-100 transition mb-4"
+        >
           <input
             type="file"
             accept=".pdf"
@@ -58,7 +82,9 @@ function App() {
           <div className="text-purple-700 font-semibold text-sm">
             {file ? file.name : "Click karke PDF choose karo"}
           </div>
-          <div className="text-gray-400 text-xs mt-1">Sirf PDF format supported hai</div>
+          <div className="text-gray-400 text-xs mt-1">
+            Sirf PDF format supported hai
+          </div>
         </label>
 
         {/* Button */}
@@ -71,7 +97,7 @@ function App() {
               : "bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 cursor-pointer"
           }`}
         >
-          {loading ? "⏳ Analyzing your resume..." : "🚀 Score My Resume"}
+          {loading ? " Analyzing your resume..." : " Score My Resume"}
         </button>
 
         {/* Error */}
@@ -87,7 +113,9 @@ function App() {
             {/* Score Card */}
             <div className="bg-gray-50 rounded-2xl p-6 text-center mb-5">
               <div className="text-gray-400 text-sm mb-1">ATS Score</div>
-              <div className={`text-6xl font-bold ${scoreColor(result.ats_score)}`}>
+              <div
+                className={`text-6xl font-bold ${scoreColor(result.ats_score)}`}
+              >
                 {result.ats_score}
               </div>
               <div className="text-gray-400 text-sm">/100</div>
@@ -95,9 +123,14 @@ function App() {
 
             {/* Strengths */}
             <div className="mb-4">
-              <h3 className="text-indigo-900 font-semibold text-base mb-2">✅ Strengths</h3>
+              <h3 className="text-indigo-900 font-semibold text-base mb-2">
+                ✅ Strengths
+              </h3>
               {result.strengths.map((s, i) => (
-                <div key={i} className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 mb-2 text-green-800 text-sm">
+                <div
+                  key={i}
+                  className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 mb-2 text-green-800 text-sm"
+                >
                   {s}
                 </div>
               ))}
@@ -105,9 +138,14 @@ function App() {
 
             {/* Improvements */}
             <div className="mb-4">
-              <h3 className="text-indigo-900 font-semibold text-base mb-2">💡 Improvements</h3>
+              <h3 className="text-indigo-900 font-semibold text-base mb-2">
+                💡 Improvements
+              </h3>
               {result.improvements.map((imp, i) => (
-                <div key={i} className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 mb-2 text-yellow-800 text-sm">
+                <div
+                  key={i}
+                  className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 mb-2 text-yellow-800 text-sm"
+                >
                   {imp}
                 </div>
               ))}
@@ -115,15 +153,26 @@ function App() {
 
             {/* Missing Keywords */}
             <div>
-              <h3 className="text-indigo-900 font-semibold text-base mb-2">🔍 Missing Keywords</h3>
+              <h3 className="text-indigo-900 font-semibold text-base mb-2">
+                🔍 Missing Keywords
+              </h3>
               <div className="flex flex-wrap gap-2">
                 {result.missing_keywords.map((k, i) => (
-                  <span key={i} className="bg-purple-100 text-purple-700 px-4 py-1 rounded-full text-sm font-medium">
+                  <span
+                    key={i}
+                    className="bg-purple-100 text-purple-700 px-4 py-1 rounded-full text-sm font-medium"
+                  >
                     {k}
                   </span>
                 ))}
               </div>
             </div>
+            <button
+              onClick={handleDownloadReport}
+              className="mt-6 w-full py-3 rounded-xl text-white font-semibold text-base bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 cursor-pointer"
+            >
+               Download PDF Report
+            </button>
           </div>
         )}
       </div>
