@@ -18,7 +18,7 @@ function App() {
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/score-resume",
+        "https://resume-scorer-backend.onrender.com",
         formData
       );
       setResult(response.data);
@@ -54,7 +54,7 @@ function App() {
             className="hidden"
             onChange={(e) => setFile(e.target.files[0])}
           />
-          <div className="text-3xl mb-2">📁</div>
+          <div className="text-3xl mb-2"></div>
           <div className="text-purple-700 font-semibold text-sm">
             {file ? file.name : "Click karke PDF choose karo"}
           </div>
