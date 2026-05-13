@@ -281,7 +281,7 @@ function App() {
                           <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60">
                             <div className="text-3xl mb-2">🔒</div>
                             <p className="text-gray-700 font-semibold text-sm mb-3">
-                              Unlock karo ₹149 mein
+                              Unlock karo ₹49 mein
                             </p>
                             <button
                               onClick={() => handlePayment(i)}
