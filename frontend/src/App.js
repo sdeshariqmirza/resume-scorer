@@ -84,13 +84,18 @@ function App() {
           },
         );
         if (verifyRes.data.success) {
-          const blob = new Blob([resumes[resumeIndex].content], {
-            type: "text/plain",
-          });
-          const url = window.URL.createObjectURL(blob);
+          const formData = new FormData();
+          formData.append("content", resumes[resumeIndex].content);
+          formData.append("title", resumes[resumeIndex].title);
+          const docRes = await axios.post(
+            "https://resume-scorer-backend.onrender.com/download-resume",
+            formData,
+            { responseType: "blob" }
+          );
+          const url = window.URL.createObjectURL(new Blob([docRes.data]));
           const link = document.createElement("a");
           link.href = url;
-          link.setAttribute("download", `resume_${resumeIndex + 1}.txt`);
+          link.setAttribute("download", `resume_${resumeIndex + 1}.docx`);
           document.body.appendChild(link);
           link.click();
           link.remove();

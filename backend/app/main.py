@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from groq import Groq
@@ -14,6 +14,7 @@ import io
 import json
 import tempfile
 import razorpay
+from docx import Document
 
 load_dotenv()
 
@@ -229,3 +230,15 @@ async def verify_payment(data: dict):
         return {"success": True}
     except:
         return {"success": False}
+
+        @app.post("/download-resume")
+async def download_resume(content: str = Form(...), title: str = Form(...)):
+    doc = Document()
+    doc.add_heading(title, 0)
+    for line in content.split("\n"):
+        if line.strip():
+            doc.add_paragraph(line)
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
+    doc.save(tmp.name)
+    return FileResponse(tmp.name, media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        filename=f"{title}.docx")
