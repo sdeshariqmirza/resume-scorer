@@ -211,7 +211,7 @@ Respond in this exact JSON format only, nothing else:
 async def create_order():
     rz_client = razorpay.Client(auth=(os.getenv("RAZORPAY_KEY_ID"), os.getenv("RAZORPAY_KEY_SECRET")))
     order = rz_client.order.create({
-        "amount": 14900,
+        "amount": 4900,
         "currency": "INR",
         "payment_capture": 1
     })

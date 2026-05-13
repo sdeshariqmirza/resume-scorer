@@ -287,7 +287,7 @@ function App() {
                               onClick={() => handlePayment(i)}
                               className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-2 rounded-xl text-sm font-semibold hover:from-indigo-600 hover:to-purple-700 cursor-pointer"
                             >
-                              💳 Pay ₹149 & Download
+                              💳 Pay ₹49 & Download
                             </button>
                           </div>
                         </div>
