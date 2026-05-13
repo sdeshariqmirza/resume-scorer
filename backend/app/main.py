@@ -231,7 +231,8 @@ async def verify_payment(data: dict):
     except:
         return {"success": False}
 
-        @app.post("/download-resume")
+
+@app.post("/download-resume")
 async def download_resume(content: str = Form(...), title: str = Form(...)):
     doc = Document()
     doc.add_heading(title, 0)
